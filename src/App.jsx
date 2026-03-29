@@ -8,7 +8,7 @@ const POLL_MS = 30_000;
 
 const KADER = {
   Tor: [
-    { nr: 1,  name: "Ena Mahmutovic",    nat: "BA", age: 22 },
+    { nr: 1,  name: "Ena Mahmutović",    nat: "BA", age: 22 },
     { nr: 12, name: "Maria Luisa Grohs", nat: "DE", age: 27 },
     { nr: 25, name: "Meike Doerge",      nat: "DE", age: 26 },
   ],
@@ -30,9 +30,9 @@ const KADER = {
     { nr: 21, name: "Pernille Harder", nat: "DK", age: 32 },
   ],
   Sturm: [
-    { nr: 7,  name: "Jovana Damnjanovic", nat: "RS", age: 24 },
-    { nr: 9,  name: "Lea Schueller",      nat: "DE", age: 27 },
-    { nr: 11, name: "Klara Buehl",        nat: "DE", age: 24 },
+    { nr: 7,  name: "Jovana Damnjanović", nat: "RS", age: 24 },
+    { nr: 9,  name: "Lea Schüller",      nat: "DE", age: 27 },
+    { nr: 11, name: "Klara Bühl",        nat: "DE", age: 24 },
     { nr: 20, name: "Weronika Grzesiak",  nat: "PL", age: 22 },
   ],
 };
@@ -41,7 +41,7 @@ const POS_COLOR = { Tor:"#e8212b", Abwehr:"#1a6fc4", Mittelfeld:"#2ea84e", Sturm
 const FLAG = { DE:"DE", AT:"AT", EN:"EN", DK:"DK", SE:"SE", IS:"IS", JP:"JP", IT:"IT", RS:"RS", PL:"PL", BA:"BA" };
 
 const VEREIN_STATS = [
-  { label: "Gegruendet",      value: "1900", sub: "FC Bayern Muenchen e.V." },
+  { label: "Gegründet",      value: "1900", sub: "FC Bayern Muenchen e.V." },
   { label: "Meisterschaften", value: "11x",  sub: "Frauen-Bundesliga" },
   { label: "Stadion",         value: "SAP",  sub: "Garden (bis 7.500)" },
 ];
@@ -93,7 +93,7 @@ const ICONS = {
   kader:(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>),
   verein:(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>),
 };
-const NAV = [{id:"countdown",label:"Naechstes"},{id:"spielplan",label:"Spielplan"},{id:"ticker",label:"Live"},{id:"tabelle",label:"Tabelle"},{id:"kader",label:"Kader"},{id:"verein",label:"Verein"}];
+const NAV = [{id:"countdown",label:"Nächstes"},{id:"spielplan",label:"Spielplan"},{id:"ticker",label:"Live"},{id:"tabelle",label:"Tabelle"},{id:"kader",label:"Kader"},{id:"verein",label:"Verein"}];
 
 export default function App() {
   const [dark,setDark] = useState(true);
@@ -154,7 +154,7 @@ export default function App() {
     return (
       <div>
         <div style={S.heroBlock}>
-          <div style={S.heroLabel}>Naechstes Spiel</div>
+          <div style={S.heroLabel}>Nächstes Spiel</div>
           {nextMatch ? <>
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
               <div style={{fontSize:14,fontWeight:800,color:"#fff",flex:1}}>
@@ -224,7 +224,7 @@ export default function App() {
           <div style={{fontSize:10,fontWeight:700,color:C.text2}}>{m.group?.groupName}</div>
           {isNext&&<div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:5}}>
             <div style={{width:7,height:7,borderRadius:"50%",background:ROT,animation:"pulse 1.5s infinite"}}/>
-            <span style={{fontSize:10,fontWeight:700,color:ROT}}>NAECHSTES</span>
+            <span style={{fontSize:10,fontWeight:700,color:ROT}}>NÄCHSTES</span>
           </div>}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -257,7 +257,7 @@ export default function App() {
       <div style={{padding:"16px 20px 0"}}>
         {upcoming.length>0&&<><div style={S.sectionLabel}>Kommende Spiele</div><div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:20}}>{upcoming.map((m,i)=><MatchCard key={m.matchID} m={m} isNext={i===0}/>)}</div></>}
         {past.length>0&&<><div style={S.sectionLabel}>Ergebnisse</div><div style={{display:"flex",flexDirection:"column",gap:8}}>{past.map(m=><MatchCard key={m.matchID} m={m} isNext={false}/>)}</div></>}
-        {loading&&<div style={{textAlign:"center",color:C.text2,padding:24}}>Lade Daten...</div>}
+        {loading&&<div style={{textAlign:"center",color:C.text2,padding:24}}>Lade Daten…</div>}
       </div>
     </div>;
   };
@@ -281,7 +281,7 @@ export default function App() {
               <div style={{display:"flex",alignItems:"center",gap:8}}>
                 <div style={{flex:1}}>
                   <div style={{fontSize:13,fontWeight:isBay?800:600,color:C.text}}>{m.team1.shortName+" - "+m.team2.shortName}</div>
-                  <div style={{fontSize:11,color:C.text2,marginTop:2}}>{fmtTime(m.matchDateTime)}{m.matchIsFinished?" - Abgepfiffen":""}{!m.matchIsFinished&&m.matchResults?.length>0?" - Laeuft":""}</div>
+                  <div style={{fontSize:11,color:C.text2,marginTop:2}}>{fmtTime(m.matchDateTime)}{m.matchIsFinished?" - Abgepfiffen":""}{!m.matchIsFinished&&m.matchResults?.length>0?" - Läuft":""}</div>
                 </div>
                 {sc!==null?<div style={{fontSize:18,fontWeight:900,color:isBay?ROT:C.text}}>{sc.t1+":"+sc.t2}</div>:<div style={{fontSize:13,color:C.text2}}>{fmtTime(m.matchDateTime)}</div>}
               </div>
@@ -367,7 +367,7 @@ export default function App() {
   const renderVerein = () => (
     <div>
       <div style={{...S.heroBlock,paddingBottom:0}}>
-        <div style={S.heroLabel}>FC Bayern Muenchen Frauen</div>
+        <div style={S.heroLabel}>FC Bayern München Frauen</div>
         <div style={{display:"flex",gap:0,marginTop:20}}>
           {VEREIN_STATS.map(({label,value,sub},i)=>(
             <div key={label} style={{flex:1,paddingBottom:20,borderRight:i<2?"1px solid rgba(255,255,255,0.2)":"none",paddingRight:16,paddingLeft:i>0?16:0}}>
@@ -379,9 +379,9 @@ export default function App() {
         </div>
       </div>
       <div style={{padding:"20px 20px"}}>
-        <div style={S.sectionLabel}>Ueber den Verein</div>
+        <div style={S.sectionLabel}>Über den Verein</div>
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          {[["Heimstadion","FC Bayern Campus, Muenchen"],["Trainer","Alexander Straus"],["Praesident","Herbert Hainer"],["Vereinsfarben","Rot & Weiss"],["Liga","1. Frauen-Bundesliga"],["Website","fcbayern.com/frauen"]].map(([k,v])=>(
+          {[["Heimstadion","FC Bayern Campus, München"],["Trainer","Alexander Straus"],["Präsident","Herbert Hainer"],["Vereinsfarben","Rot & Weiss"],["Liga","1. Frauen-Bundesliga"],["Website","fcbayern.com/frauen"]].map(([k,v])=>(
             <div key={k} style={{...S.card,padding:"12px 14px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <div style={{fontSize:12,color:C.text2,fontWeight:600}}>{k}</div>
               <div style={{fontSize:13,color:C.text,fontWeight:700}}>{v}</div>
