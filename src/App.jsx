@@ -532,8 +532,8 @@ export default function App() {
   const fetchData = async () => {
     try {
       const [matchRes, tableRes] = await Promise.all([
-        fetch("https://api.openligadb.de/getmatchdata/dfb-frauen/2024"),
-        fetch("https://api.openligadb.de/getbltable/dfb-frauen/2024"),
+        fetch("https://api.openligadb.de/getmatchdata/frauen-bl/2024"),
+fetch("https://api.openligadb.de/getbltable/frauen-bl/2024"),
       ]);
       const [matchData, tableData] = await Promise.all([matchRes.json(), tableRes.json()]);
       setMatches(Array.isArray(matchData) ? matchData : []);
@@ -553,7 +553,7 @@ export default function App() {
  
   // Derived state
   const now = new Date();
-  const futureMatches = matches.filter((m) => new Date(m.MatchDateTimeUTC) > now && !m.MatchIsFinished);
+  const futureMatches = matches.filter((m) => !m.MatchIsFinished);
   const nextMatch = futureMatches.sort((a, b) => new Date(a.MatchDateTimeUTC) - new Date(b.MatchDateTimeUTC))[0] || null;
   const liveMatch = matches.find((m) => !m.MatchIsFinished && new Date(m.MatchDateTimeUTC) <= now && new Date(m.MatchDateTimeUTC) > new Date(now - 120 * 60000)) || null;
  
