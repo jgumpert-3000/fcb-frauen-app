@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
- 
+
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 const T = {
   rot: "#e8212b",
@@ -15,7 +15,7 @@ const T = {
   gelb: "#f5c518",
   blau: "#1a6fd4",
 };
- 
+
 // ─── SQUAD DATA (static) ───────────────────────────────────────────────────────
 const SQUAD = {
   Tor: [
@@ -49,10 +49,10 @@ const SQUAD = {
     { nr: 25, name: "Sandie Toletti", nation: "FR" },
   ],
 };
- 
+
 // ─── FLAG HELPER ──────────────────────────────────────────────────────────────
 const FLAG = { DE: "🇩🇪", AT: "🇦🇹", SE: "🇸🇪", IS: "🇮🇸", RS: "🇷🇸", ES: "🇪🇸", FR: "🇫🇷", DK: "🇩🇰", PL: "🇵🇱", "GB-ENG": "🏴󠁧󠁢󠁥󠁮󠁧󠁿" };
- 
+
 // ─── VEREIN DATA ──────────────────────────────────────────────────────────────
 const VEREIN = {
   gründung: 1970,
@@ -63,7 +63,7 @@ const VEREIN = {
   kapazität: 2500,
   cheftrainerin: "Alexander Straus",
 };
- 
+
 // ─── SVG ICONS ────────────────────────────────────────────────────────────────
 const Icon = {
   countdown: (
@@ -107,15 +107,15 @@ const Icon = {
     </svg>
   ),
 };
- 
+
 // ─── COUNTDOWN TAB ────────────────────────────────────────────────────────────
 function CountdownTab({ dark, nextMatch }) {
   const [timeLeft, setTimeLeft] = useState({ d: 0, h: 0, m: 0, s: 0 });
- 
+
   useEffect(() => {
     if (!nextMatch) return;
     const tick = () => {
-      const diff = new Date(nextMatch.MatchDateTimeUTC) - new Date();
+      const diff = new Date(nextMatch.MatchDateTime || nextMatch.MatchDateTimeUTC) - new Date();
       if (diff <= 0) { setTimeLeft({ d: 0, h: 0, m: 0, s: 0 }); return; }
       const d = Math.floor(diff / 86400000);
       const h = Math.floor((diff % 86400000) / 3600000);
@@ -127,13 +127,13 @@ function CountdownTab({ dark, nextMatch }) {
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [nextMatch]);
- 
+
   const bg = dark ? T.schwarz : T.weiss;
   const fg = dark ? T.weiss : T.schwarz;
   const card = dark ? T.grau800 : T.grau100;
- 
+
   const pad = (n) => String(n).padStart(2, "0");
- 
+
   const Unit = ({ val, label }) => (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1 }}>
       <div style={{
@@ -144,7 +144,7 @@ function CountdownTab({ dark, nextMatch }) {
       <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", color: "rgba(255,255,255,0.6)", marginTop: 8, textTransform: "uppercase" }}>{label}</div>
     </div>
   );
- 
+
   return (
     <div style={{ background: bg, minHeight: "100vh", fontFamily: "Inter, sans-serif" }}>
       {/* HERO */}
@@ -152,7 +152,7 @@ function CountdownTab({ dark, nextMatch }) {
         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.16em", color: "rgba(255,255,255,0.6)", textTransform: "uppercase", marginBottom: 16 }}>Nächstes Spiel</div>
         {nextMatch ? (
           <div style={{ fontSize: 22, fontWeight: 800, color: T.weiss, textTransform: "uppercase", letterSpacing: "-0.5px", marginBottom: 32 }}>
-            {nextMatch.Team1?.ShortName} vs {nextMatch.Team2?.ShortName}
+            {nextMatch.Team1?.ShortName || nextMatch.Team1?.TeamName} vs {nextMatch.Team2?.ShortName || nextMatch.Team2?.TeamName}
           </div>
         ) : (
           <div style={{ fontSize: 22, fontWeight: 800, color: T.weiss, textTransform: "uppercase", letterSpacing: "-0.5px", marginBottom: 32 }}>Kein Spiel geplant</div>
@@ -173,10 +173,10 @@ function CountdownTab({ dark, nextMatch }) {
         <div style={{ margin: 24, background: card, borderRadius: 12, padding: 20 }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: T.grau400, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>Details</div>
           <div style={{ fontSize: 16, fontWeight: 700, color: fg }}>
-            {new Date(nextMatch.MatchDateTimeUTC).toLocaleDateString("de-DE", { weekday: "long", day: "2-digit", month: "long", year: "numeric" })}
+            {new Date(nextMatch.MatchDateTime || nextMatch.MatchDateTimeUTC).toLocaleDateString("de-DE", { weekday: "long", day: "2-digit", month: "long", year: "numeric" })}
           </div>
           <div style={{ fontSize: 14, color: T.grau400, marginTop: 4 }}>
-            {new Date(nextMatch.MatchDateTimeUTC).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} Uhr
+            {new Date(nextMatch.MatchDateTime || nextMatch.MatchDateTimeUTC).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} Uhr
           </div>
           {nextMatch.MatchResults?.length > 0 === false && (
             <div style={{ marginTop: 12, fontSize: 13, color: T.grau600 }}>
@@ -188,27 +188,28 @@ function CountdownTab({ dark, nextMatch }) {
     </div>
   );
 }
- 
+
 // ─── SPIELPLAN TAB ────────────────────────────────────────────────────────────
 function SpielplanTab({ dark, matches, nextMatch }) {
   const bg = dark ? T.schwarz : T.weiss;
   const fg = dark ? T.weiss : T.schwarz;
   const card = dark ? T.grau800 : T.grau100;
   const sub = dark ? T.grau400 : T.grau600;
- 
+
   const isNext = (m) => nextMatch && m.MatchID === nextMatch.MatchID;
   const isDone = (m) => m.MatchIsFinished;
+  const teamName = (t) => t?.ShortName || t?.TeamName || "";
   const isBayern = (m) =>
-    m.Team1?.ShortName?.includes("Bayern") || m.Team2?.ShortName?.includes("Bayern");
- 
+    teamName(m.Team1).includes("Bayern") || teamName(m.Team2).includes("Bayern");
+
   const bayernMatches = matches.filter(isBayern);
- 
+
   const ResultStripe = ({ m }) => {
     if (!isDone(m)) return null;
     const r = m.MatchResults?.find((r) => r.ResultTypeID === 2) || m.MatchResults?.[0];
     if (!r) return null;
     const g1 = r.PointsTeam1, g2 = r.PointsTeam2;
-    const bayernHome = m.Team1?.ShortName?.includes("Bayern");
+    const bayernHome = teamName(m.Team1).includes("Bayern");
     const bayernGoals = bayernHome ? g1 : g2;
     const oppGoals = bayernHome ? g2 : g1;
     const won = bayernGoals > oppGoals;
@@ -224,7 +225,7 @@ function SpielplanTab({ dark, matches, nextMatch }) {
       </div>
     );
   };
- 
+
   return (
     <div style={{ background: bg, minHeight: "100vh", fontFamily: "Inter, sans-serif", paddingBottom: 32 }}>
       <div style={{ background: T.rot, padding: "32px 24px 24px" }}>
@@ -251,12 +252,12 @@ function SpielplanTab({ dark, matches, nextMatch }) {
               </div>
             )}
             <div style={{ fontSize: 11, fontWeight: 600, color: sub, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-              {new Date(m.MatchDateTimeUTC).toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "short" })}
+              {new Date(m.MatchDateTime || m.MatchDateTimeUTC).toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "short" })}
               {" · "}
-              {new Date(m.MatchDateTimeUTC).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} Uhr
+              {new Date(m.MatchDateTime || m.MatchDateTimeUTC).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} Uhr
             </div>
             <div style={{ fontSize: 17, fontWeight: 800, color: fg, letterSpacing: "-0.3px" }}>
-              {m.Team1?.TeamName} – {m.Team2?.TeamName}
+              {teamName(m.Team1)} – {teamName(m.Team2)}
             </div>
             <ResultStripe m={m} />
           </div>
@@ -266,14 +267,14 @@ function SpielplanTab({ dark, matches, nextMatch }) {
     </div>
   );
 }
- 
+
 // ─── LIVE TICKER TAB ──────────────────────────────────────────────────────────
 function TickerTab({ dark, liveMatch }) {
   const bg = dark ? T.schwarz : T.weiss;
   const fg = dark ? T.weiss : T.schwarz;
   const card = dark ? T.grau800 : T.grau100;
   const sub = dark ? T.grau400 : T.grau600;
- 
+
   if (!liveMatch) {
     return (
       <div style={{ background: bg, minHeight: "100vh", fontFamily: "Inter, sans-serif" }}>
@@ -291,13 +292,13 @@ function TickerTab({ dark, liveMatch }) {
       </div>
     );
   }
- 
+
   const r = liveMatch.MatchResults?.find((r) => r.ResultTypeID === 2) || liveMatch.MatchResults?.[0];
   const g1 = r?.PointsTeam1 ?? 0;
   const g2 = r?.PointsTeam2 ?? 0;
- 
+
   const events = liveMatch.Goals || [];
- 
+
   return (
     <div style={{ background: bg, minHeight: "100vh", fontFamily: "Inter, sans-serif", paddingBottom: 32 }}>
       {/* Scoreboard hero */}
@@ -322,7 +323,7 @@ function TickerTab({ dark, liveMatch }) {
           ))}
         </div>
       </div>
- 
+
       {/* Event feed */}
       <div style={{ padding: "16px 24px 0" }}>
         {events.length === 0 && (
@@ -355,16 +356,16 @@ function TickerTab({ dark, liveMatch }) {
     </div>
   );
 }
- 
+
 // ─── TABELLE TAB ──────────────────────────────────────────────────────────────
 function TabelleTab({ dark, table }) {
   const bg = dark ? T.schwarz : T.weiss;
   const fg = dark ? T.weiss : T.schwarz;
   const card = dark ? T.grau800 : T.grau100;
   const sub = dark ? T.grau400 : T.grau600;
- 
+
   const bayernEntry = table.find((t) => t.ShortName?.includes("Bayern") || t.TeamName?.includes("Bayern"));
- 
+
   return (
     <div style={{ background: bg, minHeight: "100vh", fontFamily: "Inter, sans-serif", paddingBottom: 32 }}>
       {/* Hero */}
@@ -380,7 +381,7 @@ function TabelleTab({ dark, table }) {
           FC Bayern München · Platz {bayernEntry?.TablePosition ?? "–"}
         </div>
       </div>
- 
+
       {/* Table */}
       <div style={{ padding: "16px 24px 0" }}>
         {/* Header */}
@@ -420,14 +421,14 @@ function TabelleTab({ dark, table }) {
     </div>
   );
 }
- 
+
 // ─── KADER TAB ────────────────────────────────────────────────────────────────
 function KaderTab({ dark }) {
   const bg = dark ? T.schwarz : T.weiss;
   const fg = dark ? T.weiss : T.schwarz;
   const card = dark ? T.grau800 : T.grau100;
   const sub = dark ? T.grau400 : T.grau600;
- 
+
   const PlayerCard = ({ p }) => (
     <div style={{
       background: card,
@@ -453,7 +454,7 @@ function KaderTab({ dark }) {
       </div>
     </div>
   );
- 
+
   return (
     <div style={{ background: bg, minHeight: "100vh", fontFamily: "Inter, sans-serif", paddingBottom: 32 }}>
       <div style={{ background: T.rot, padding: "32px 24px 24px" }}>
@@ -471,21 +472,21 @@ function KaderTab({ dark }) {
     </div>
   );
 }
- 
+
 // ─── VEREIN TAB ───────────────────────────────────────────────────────────────
 function VereinTab({ dark }) {
   const bg = dark ? T.schwarz : T.weiss;
   const fg = dark ? T.weiss : T.schwarz;
   const card = dark ? T.grau800 : T.grau100;
   const sub = dark ? T.grau400 : T.grau600;
- 
+
   const StatBlock = ({ label, value }) => (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
       <div style={{ fontSize: 48, fontWeight: 900, color: T.weiss, letterSpacing: "-2px", lineHeight: 1 }}>{value}</div>
       <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: "0.12em", marginTop: 6 }}>{label}</div>
     </div>
   );
- 
+
   return (
     <div style={{ background: bg, minHeight: "100vh", fontFamily: "Inter, sans-serif", paddingBottom: 32 }}>
       {/* Hero with stats flush */}
@@ -500,7 +501,7 @@ function VereinTab({ dark }) {
           <StatBlock label="CL-Titel" value={VEREIN.clTitel} />
         </div>
       </div>
- 
+
       {/* Info cards */}
       <div style={{ padding: "16px 24px 0" }}>
         {[
@@ -519,7 +520,7 @@ function VereinTab({ dark }) {
     </div>
   );
 }
- 
+
 // ─── APP ROOT ─────────────────────────────────────────────────────────────────
 export default function App() {
   const [dark, setDark] = useState(false);
@@ -528,12 +529,12 @@ export default function App() {
   const [table, setTable] = useState([]);
   const [loading, setLoading] = useState(true);
   const pollRef = useRef(null);
- 
+
   const fetchData = async () => {
     try {
       const [matchRes, tableRes] = await Promise.all([
-        fetch("https://api.openligadb.de/getmatchdata/fbl1/2024"),
-        fetch("https://api.openligadb.de/getbltable/fbl1/2024"),
+        fetch("https://api.openligadb.de/getmatchdata/dfb-frauen/2024"),
+        fetch("https://api.openligadb.de/getbltable/dfb-frauen/2024"),
       ]);
       const [matchData, tableData] = await Promise.all([matchRes.json(), tableRes.json()]);
       setMatches(Array.isArray(matchData) ? matchData : []);
@@ -544,23 +545,24 @@ export default function App() {
       setLoading(false);
     }
   };
- 
+
   useEffect(() => {
     fetchData();
     pollRef.current = setInterval(fetchData, 30000);
     return () => clearInterval(pollRef.current);
   }, []);
- 
-  // Derived state
+
+  // Derived state — fbl1 uses MatchDateTime (local time), fallback to MatchDateTimeUTC
   const now = new Date();
-  const futureMatches = matches.filter((m) => !m.MatchIsFinished);
-  const nextMatch = futureMatches.sort((a, b) => new Date(a.MatchDateTimeUTC) - new Date(b.MatchDateTimeUTC))[0] || null;
-  const liveMatch = matches.find((m) => !m.MatchIsFinished && new Date(m.MatchDateTimeUTC) <= now && new Date(m.MatchDateTimeUTC) > new Date(now - 120 * 60000)) || null;
- 
+  const getDate = (m) => new Date(m.MatchDateTime || m.MatchDateTimeUTC);
+  const futureMatches = matches.filter((m) => !m.MatchIsFinished && getDate(m) > now);
+  const nextMatch = futureMatches.sort((a, b) => getDate(a) - getDate(b))[0] || null;
+  const liveMatch = matches.find((m) => !m.MatchIsFinished && getDate(m) <= now && getDate(m) > new Date(now - 120 * 60000)) || null;
+
   const bg = dark ? T.schwarz : T.weiss;
   const fg = dark ? T.weiss : T.schwarz;
   const navBg = dark ? T.grau800 : T.grau100;
- 
+
   const TABS = [
     { id: "countdown", label: "Countdown", icon: Icon.countdown },
     { id: "spielplan", label: "Spielplan", icon: Icon.spielplan },
@@ -569,7 +571,7 @@ export default function App() {
     { id: "kader", label: "Kader", icon: Icon.kader },
     { id: "verein", label: "Verein", icon: Icon.verein },
   ];
- 
+
   return (
     <div style={{
       maxWidth: 430,
@@ -620,7 +622,7 @@ export default function App() {
           {dark ? "Hell" : "Dunkel"}
         </button>
       </header>
- 
+
       {/* Content */}
       <main style={{ flex: 1 }}>
         {tab === "countdown" && <CountdownTab dark={dark} nextMatch={nextMatch} />}
@@ -630,7 +632,7 @@ export default function App() {
         {tab === "kader" && <KaderTab dark={dark} />}
         {tab === "verein" && <VereinTab dark={dark} />}
       </main>
- 
+
       {/* Bottom Nav */}
       <nav style={{
         background: navBg,
