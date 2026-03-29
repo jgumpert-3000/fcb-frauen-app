@@ -115,7 +115,7 @@ function CountdownTab({ dark, nextMatch }) {
   useEffect(() => {
     if (!nextMatch) return;
     const tick = () => {
-      const diff = new Date(nextMatch.MatchDateTime || nextMatch.MatchDateTimeUTC) - new Date();
+      const diff = new Date(nextMatch.matchDateTimeUTC || nextMatch.matchDateTime) - new Date();
       if (diff <= 0) { setTimeLeft({ d: 0, h: 0, m: 0, s: 0 }); return; }
       const d = Math.floor(diff / 86400000);
       const h = Math.floor((diff % 86400000) / 3600000);
@@ -152,7 +152,7 @@ function CountdownTab({ dark, nextMatch }) {
         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.16em", color: "rgba(255,255,255,0.6)", textTransform: "uppercase", marginBottom: 16 }}>Nächstes Spiel</div>
         {nextMatch ? (
           <div style={{ fontSize: 22, fontWeight: 800, color: T.weiss, textTransform: "uppercase", letterSpacing: "-0.5px", marginBottom: 32 }}>
-            {nextMatch.Team1?.ShortName || nextMatch.Team1?.TeamName} vs {nextMatch.Team2?.ShortName || nextMatch.Team2?.TeamName}
+            {nextMatch.team1?.shortName || nextMatch.team1?.teamName} vs {nextMatch.team2?.shortName || nextMatch.team2?.teamName}
           </div>
         ) : (
           <div style={{ fontSize: 22, fontWeight: 800, color: T.weiss, textTransform: "uppercase", letterSpacing: "-0.5px", marginBottom: 32 }}>Kein Spiel geplant</div>
@@ -173,10 +173,10 @@ function CountdownTab({ dark, nextMatch }) {
         <div style={{ margin: 24, background: card, borderRadius: 12, padding: 20 }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: T.grau400, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>Details</div>
           <div style={{ fontSize: 16, fontWeight: 700, color: fg }}>
-            {new Date(nextMatch.MatchDateTime || nextMatch.MatchDateTimeUTC).toLocaleDateString("de-DE", { weekday: "long", day: "2-digit", month: "long", year: "numeric" })}
+            {new Date(nextMatch.matchDateTimeUTC || nextMatch.matchDateTime).toLocaleDateString("de-DE", { weekday: "long", day: "2-digit", month: "long", year: "numeric" })}
           </div>
           <div style={{ fontSize: 14, color: T.grau400, marginTop: 4 }}>
-            {new Date(nextMatch.MatchDateTime || nextMatch.MatchDateTimeUTC).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} Uhr
+            {new Date(nextMatch.matchDateTimeUTC || nextMatch.matchDateTime).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} Uhr
           </div>
           {nextMatch.MatchResults?.length > 0 === false && (
             <div style={{ marginTop: 12, fontSize: 13, color: T.grau600 }}>
