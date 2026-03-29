@@ -197,8 +197,8 @@ function SpielplanTab({ dark, matches, nextMatch }) {
   const sub = dark ? T.grau400 : T.grau600;
 
   const isNext = (m) => nextMatch && m.MatchID === nextMatch.MatchID;
-  const isDone = (m) => m.MatchIsFinished;
-  const teamName = (t) => t?.ShortName || t?.TeamName || "";
+  const isDone = (m) => m.matchIsFinished || m.MatchIsFinished;
+  const teamName = (t) => t?.shortName || t?.ShortName || t?.teamName || t?.TeamName || "";
   const isBayern = (m) =>
     teamName(m.Team1).includes("Bayern") || teamName(m.Team2).includes("Bayern");
 
@@ -252,9 +252,9 @@ function SpielplanTab({ dark, matches, nextMatch }) {
               </div>
             )}
             <div style={{ fontSize: 11, fontWeight: 600, color: sub, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-              {new Date(m.MatchDateTime || m.MatchDateTimeUTC).toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "short" })}
+              {new Date(m.matchDateTimeUTC || m.matchDateTime || m.MatchDateTimeUTC || m.MatchDateTime).toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "short" })}
               {" · "}
-              {new Date(m.MatchDateTime || m.MatchDateTimeUTC).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} Uhr
+              {new Date(m.matchDateTimeUTC || m.matchDateTime || m.MatchDateTimeUTC || m.MatchDateTime).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })} Uhr
             </div>
             <div style={{ fontSize: 17, fontWeight: 800, color: fg, letterSpacing: "-0.3px" }}>
               {teamName(m.Team1)} – {teamName(m.Team2)}
@@ -373,12 +373,12 @@ function TabelleTab({ dark, table }) {
         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.16em", color: "rgba(255,255,255,0.6)", textTransform: "uppercase", marginBottom: 8 }}>Frauen-Bundesliga</div>
         <div style={{ display: "flex", alignItems: "flex-end", gap: 16, marginBottom: 8 }}>
           <div style={{ fontSize: 64, fontWeight: 900, lineHeight: 1, color: T.weiss, letterSpacing: "-3px" }}>
-            {bayernEntry?.Points ?? "–"}
+            {bayernEntry?.points ?? bayernEntry?.Points ?? "–"}
           </div>
           <div style={{ fontSize: 14, fontWeight: 700, color: "rgba(255,255,255,0.6)", paddingBottom: 8, textTransform: "uppercase", letterSpacing: "0.1em" }}>Punkte</div>
         </div>
         <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-          FC Bayern München · Platz {bayernEntry?.TablePosition ?? "–"}
+          FC Bayern München · Platz {bayernEntry?.tablePosition ?? bayernEntry?.TablePosition ?? "–"}
         </div>
       </div>
 
@@ -393,7 +393,7 @@ function TabelleTab({ dark, table }) {
         {table.map((t) => {
           const isBayern = t.ShortName?.includes("Bayern") || t.TeamName?.includes("Bayern");
           return (
-            <div key={t.TeamInfoId} style={{
+            <div key={t.teamInfoId || t.TeamInfoId} style={{
               display: "grid",
               gridTemplateColumns: "24px 1fr 32px 32px 32px 40px",
               gap: 8,
@@ -403,14 +403,14 @@ function TabelleTab({ dark, table }) {
               background: isBayern ? T.rot : card,
               alignItems: "center",
             }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: isBayern ? T.weiss : sub, textAlign: "center" }}>{t.TablePosition}</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: isBayern ? T.weiss : sub, textAlign: "center" }}>{t.tablePosition || t.TablePosition}</div>
               <div style={{ fontSize: 14, fontWeight: isBayern ? 800 : 600, color: isBayern ? T.weiss : fg, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                {t.ShortName || t.TeamName}
+                {t.shortName || t.ShortName || t.teamName || t.TeamName}
               </div>
-              <div style={{ fontSize: 13, color: isBayern ? "rgba(255,255,255,0.8)" : sub, textAlign: "center" }}>{t.Matches}</div>
-              <div style={{ fontSize: 13, color: isBayern ? "rgba(255,255,255,0.8)" : sub, textAlign: "center" }}>{t.Goals}</div>
-              <div style={{ fontSize: 13, color: isBayern ? "rgba(255,255,255,0.8)" : sub, textAlign: "center" }}>{t.Won}</div>
-              <div style={{ fontSize: 14, fontWeight: 800, color: isBayern ? T.weiss : fg, textAlign: "center" }}>{t.Points}</div>
+              <div style={{ fontSize: 13, color: isBayern ? "rgba(255,255,255,0.8)" : sub, textAlign: "center" }}>{t.matches || t.Matches}</div>
+              <div style={{ fontSize: 13, color: isBayern ? "rgba(255,255,255,0.8)" : sub, textAlign: "center" }}>{t.goals || t.Goals}</div>
+              <div style={{ fontSize: 13, color: isBayern ? "rgba(255,255,255,0.8)" : sub, textAlign: "center" }}>{t.won || t.Won}</div>
+              <div style={{ fontSize: 14, fontWeight: 800, color: isBayern ? T.weiss : fg, textAlign: "center" }}>{t.points || t.Points}</div>
             </div>
           );
         })}
@@ -554,10 +554,10 @@ export default function App() {
 
   // Derived state — fbl1 uses MatchDateTime (local time), fallback to MatchDateTimeUTC
   const now = new Date();
-  const getDate = (m) => new Date(m.MatchDateTime || m.MatchDateTimeUTC);
-  const futureMatches = matches.filter((m) => !m.MatchIsFinished && getDate(m) > now);
+  const getDate = (m) => new Date(m.matchDateTimeUTC || m.matchDateTime || m.MatchDateTimeUTC || m.MatchDateTime);
+  const futureMatches = matches.filter((m) => !m.matchIsFinished || m.MatchIsFinished && getDate(m) > now);
   const nextMatch = futureMatches.sort((a, b) => getDate(a) - getDate(b))[0] || null;
-  const liveMatch = matches.find((m) => !m.MatchIsFinished && getDate(m) <= now && getDate(m) > new Date(now - 120 * 60000)) || null;
+  const liveMatch = matches.find((m) => !m.matchIsFinished || m.MatchIsFinished && getDate(m) <= now && getDate(m) > new Date(now - 120 * 60000)) || null;
 
   const bg = dark ? T.schwarz : T.weiss;
   const fg = dark ? T.weiss : T.schwarz;
