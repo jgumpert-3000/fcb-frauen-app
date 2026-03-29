@@ -533,8 +533,8 @@ export default function App() {
   const fetchData = async () => {
     try {
       const [matchRes, tableRes] = await Promise.all([
-        fetch("https://api.openligadb.de/getmatchdata/dfb-frauen/2024"),
-        fetch("https://api.openligadb.de/getbltable/dfb-frauen/2024"),
+        fetch("https://api.openligadb.de/getmatchdata/fbl1/2025"),
+        fetch("https://api.openligadb.de/getbltable/fbl1/2025"),
       ]);
       const [matchData, tableData] = await Promise.all([matchRes.json(), tableRes.json()]);
       setMatches(Array.isArray(matchData) ? matchData : []);
