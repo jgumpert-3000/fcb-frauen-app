@@ -1,6 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
 const ROT = "#e8212b";
+// Etwas dunkleres Rot für Hero-Hintergründe → Weiß erzielt 4.83:1 (WCAG AA)
+const HERO_BG = "#d91f2a";
+// Barrierefreie Badge-Farben (alle mit Weißtext ≥ 6:1)
+const BADGE = {
+  W: { bg:"#166534", text:"#fff", label:"SIEG" },
+  L: { bg:"#991b1b", text:"#fff", label:"NIED." },
+  D: { bg:"#92400e", text:"#fff", label:"UNENT." },
+};
 const LIGA = "fbl1";
 const SAISON = "2025";
 const BAYERN_TEAM_ID = 6063;
@@ -109,12 +117,14 @@ export default function App() {
 
   const C = dark ? {
     bg:"#0d0d0d",bg2:"#141414",card:"#1a1a1a",card2:"#222",border:"#2a2a2a",
-    text:"#f5f5f5",text2:"#888",text3:"#555",
-    sieg:"#1a3a1a",sieg_b:"#2a5a2a",nied:"#3a1a1a",nied_b:"#5a2a2a",unent:"#2a2a1a",unent_b:"#4a4a2a",
+    text:"#f5f5f5",text2:"#aaa",text3:"#999",
+    // Kartenrand-Indikatoren (nicht-Text): ≥3:1 auf #1a1a1a
+    sieg_b:"#22c55e",nied_b:"#f87171",unent_b:"#fbbf24",
   } : {
     bg:"#f5f4f2",bg2:"#ede9e4",card:"#ffffff",card2:"#f0ede8",border:"#d8d0c8",
-    text:"#111",text2:"#666",text3:"#aaa",
-    sieg:"#e8f5e8",sieg_b:"#4caf50",nied:"#fde8e8",nied_b:"#e53935",unent:"#fdf8e8",unent_b:"#f9a825",
+    text:"#111",text2:"#555",text3:"#555",
+    // Kartenrand-Indikatoren (nicht-Text): ≥3:1 auf #fff
+    sieg_b:"#16a34a",nied_b:"#dc2626",unent_b:"#d97706",
   };
 
   const loadAll = useCallback(async () => {
@@ -141,11 +151,14 @@ export default function App() {
   const filteredMatches = matches.filter(m=>filterWb==="Alle"||m.leagueName?.includes(filterWb));
 
   const S = {
-    heroBlock:{background:ROT,padding:"28px 20px 32px"},
-    heroLabel:{fontSize:11,fontWeight:700,letterSpacing:2,color:"rgba(255,255,255,0.6)",textTransform:"uppercase",marginBottom:8},
+    heroBlock:{background:HERO_BG,padding:"28px 20px 32px"},
+    // heroLabel: voll weißer Text → 4.83:1 auf HERO_BG (WCAG AA ✓)
+    heroLabel:{fontSize:11,fontWeight:700,letterSpacing:2,color:"#fff",textTransform:"uppercase",marginBottom:8},
     card:{background:C.card,border:"1px solid "+C.border,borderRadius:10},
     sectionLabel:{fontSize:11,fontWeight:700,letterSpacing:2,color:C.text2,textTransform:"uppercase",marginBottom:14},
-    navBtn:(a)=>({flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"10px 4px 8px",background:"none",border:"none",color:a?ROT:C.text3,cursor:"pointer",fontSize:10,fontWeight:a?700:500,letterSpacing:0.5,fontFamily:"inherit"}),
+    navBtn:(a)=>({flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2,padding:"10px 4px 8px",background:"none",border:"none",cursor:"pointer",fontSize:11,fontWeight:a?700:500,letterSpacing:0.5,fontFamily:"inherit",borderRadius:4}),
+    navIcon:(a)=>({color:a?ROT:C.text3}),        // Icon: non-text → 3:1 reicht (ROT 4.11:1 ✅)
+    navLabel:(a)=>({color:a?C.text:C.text3}),    // Text: a=C.text 15:1 ✅, inaktiv C.text3 6.47:1 ✅
   };
 
   const renderCountdown = () => {
@@ -155,30 +168,34 @@ export default function App() {
       <div>
         <div style={S.heroBlock}>
           <div style={S.heroLabel}>Nächstes Spiel</div>
+          <div style={{fontSize:44,fontWeight:900,color:"#fff",letterSpacing:-1,lineHeight:1,marginBottom:8}}>NÄCHSTES</div>
           {nextMatch ? <>
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
-              <div style={{fontSize:14,fontWeight:800,color:"#fff",flex:1}}>
-                {nextMatch.team1.teamId===BAYERN_TEAM_ID?"FCB vs "+nextMatch.team2.shortName:nextMatch.team1.shortName+" vs FCB"}
-              </div>
-              <div style={{fontSize:11,color:"rgba(255,255,255,0.6)"}}>{fmtDate(nextMatch.matchDateTime)} - {fmtTime(nextMatch.matchDateTime)}</div>
+            <div style={{fontSize:13,color:"#fff",marginBottom:2}}>
+              {nextMatch.team1.teamId===BAYERN_TEAM_ID?"FCB vs "+nextMatch.team2.shortName:nextMatch.team1.shortName+" vs FCB"} · {fmtDate(nextMatch.matchDateTime)} {fmtTime(nextMatch.matchDateTime)}
             </div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,0.5)",marginBottom:2}}>{nextMatch.group?.groupName}</div>
-            {cd ? <div style={{display:"flex",gap:0,marginTop:20}}>
-              {[{v:pad(cd.d),l:"Tage"},{v:pad(cd.h),l:"Std"},{v:pad(cd.m),l:"Min"},{v:pad(cd.s),l:"Sek"}].map(({v,l},i)=>(
-                <div key={i} style={{flex:1,textAlign:"center",borderRight:i<3?"1px solid rgba(255,255,255,0.2)":"none"}}>
-                  <div style={{fontSize:48,fontWeight:800,color:"#fff",lineHeight:1}}>{v}</div>
-                  <div style={{fontSize:10,fontWeight:600,color:"rgba(255,255,255,0.5)",letterSpacing:1.5,textTransform:"uppercase",marginTop:4}}>{l}</div>
-                </div>
-              ))}
-            </div> : <div style={{color:"rgba(255,255,255,0.7)",marginTop:16,fontSize:14}}>Spiel laeuft!</div>}
-          </> : <div style={{color:"rgba(255,255,255,0.7)",marginTop:8,fontSize:14}}>Keine kommenden Spiele</div>}
+            <div style={{fontSize:11,color:"#fff",marginBottom:0}}>{nextMatch.group?.groupName}</div>
+            {cd ? (
+              <div
+                aria-live="off"
+                aria-label={`Noch ${cd.d} Tage, ${cd.h} Stunden, ${cd.m} Minuten`}
+                style={{display:"flex",gap:0,marginTop:20}}
+              >
+                {[{v:pad(cd.d),l:"Tage"},{v:pad(cd.h),l:"Std"},{v:pad(cd.m),l:"Min"},{v:pad(cd.s),l:"Sek"}].map(({v,l},i)=>(
+                  <div key={i} aria-hidden="true" style={{flex:1,textAlign:"center",borderRight:i<3?"1px solid rgba(255,255,255,0.2)":"none"}}>
+                    <div style={{fontSize:48,fontWeight:800,color:"#fff",lineHeight:1}}>{v}</div>
+                    <div style={{fontSize:10,fontWeight:600,color:"#fff",letterSpacing:1.5,textTransform:"uppercase",marginTop:4}}>{l}</div>
+                  </div>
+                ))}
+              </div>
+            ) : <div style={{color:"#fff",marginTop:16,fontSize:14}}>Spiel läuft!</div>}
+          </> : <div style={{color:"#fff",marginTop:8,fontSize:14}}>Keine kommenden Spiele</div>}
         </div>
         {bp && <div style={{background:C.card2,borderBottom:"1px solid "+C.border,padding:"16px 20px",display:"flex",alignItems:"center",gap:12}}>
           <div style={{fontSize:11,fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",color:C.text2}}>Bundesliga</div>
           <div style={{marginLeft:"auto",display:"flex",gap:20}}>
             {[{v:"1.",l:"Platz"},{v:bp.points,l:"Pkt"},{v:bp.won+"/"+bp.draw+"/"+bp.lost,l:"S/U/N"}].map(({v,l})=>(
               <div key={l} style={{textAlign:"center"}}>
-                <div style={{fontSize:18,fontWeight:800,color:ROT}}>{v}</div>
+                <div style={{fontSize:18,fontWeight:800,color:C.text}}>{v}</div>
                 <div style={{fontSize:10,color:C.text2,fontWeight:600,letterSpacing:1}}>{l}</div>
               </div>
             ))}
@@ -191,15 +208,14 @@ export default function App() {
               const sc=getScore(m),res=isSieg(m),isHome=m.team1.teamId===BAYERN_TEAM_ID;
               const gegner=isHome?m.team2.shortName:m.team1.shortName;
               const bs=sc?(isHome?sc.t1:sc.t2):"-",gs=sc?(isHome?sc.t2:sc.t1):"-";
-              const rc=res==="W"?C.sieg_b:res==="L"?C.nied_b:C.unent_b;
-              const rb=res==="W"?C.sieg:res==="L"?C.nied:C.unent;
-              return <div key={m.matchID} style={{...S.card,padding:"12px 14px",display:"flex",alignItems:"center",gap:10,borderLeft:"4px solid "+rc}}>
+              const badge=BADGE[res]||BADGE.D;
+              return <div key={m.matchID} style={{...S.card,padding:"12px 14px",display:"flex",alignItems:"center",gap:10,borderLeft:"4px solid "+badge.bg}}>
                 <div style={{flex:1}}>
                   <div style={{fontSize:13,fontWeight:700,color:C.text}}>{isHome?"FCB":gegner} {bs}:{gs} {isHome?gegner:"FCB"}</div>
-                  <div style={{fontSize:11,color:C.text2,marginTop:2}}>{fmtDate(m.matchDateTime)} - {m.group?.groupName}</div>
+                  <div style={{fontSize:11,color:C.text2,marginTop:2}}>{fmtDate(m.matchDateTime)} · {m.group?.groupName}</div>
                 </div>
-                <div style={{background:rb,border:"1px solid "+rc,borderRadius:5,padding:"3px 8px",fontSize:11,fontWeight:800,color:rc}}>
-                  {res==="W"?"SIEG":res==="L"?"NIED.":"UNENT."}
+                <div style={{background:badge.bg,borderRadius:5,padding:"3px 8px",fontSize:11,fontWeight:800,color:badge.text}}>
+                  {badge.label}
                 </div>
               </div>;
             })}
@@ -217,44 +233,58 @@ export default function App() {
       const sc=getScore(m),res=isSieg(m),isHome=m.team1.teamId===BAYERN_TEAM_ID;
       const gegner=isHome?m.team2.shortName:m.team1.shortName;
       const bs=sc?(isHome?sc.t1:sc.t2):null,gs=sc?(isHome?sc.t2:sc.t1):null;
-      const rc=res==="W"?C.sieg_b:res==="L"?C.nied_b:res==="D"?C.unent_b:C.border;
-      const rb=res==="W"?C.sieg:res==="L"?C.nied:res==="D"?C.unent:"transparent";
-      return <div style={{...S.card,padding:"13px 14px",borderLeft:"4px solid "+(isNext?ROT:rc),opacity:m.matchIsFinished?0.85:1}}>
+      const badge=res?BADGE[res]:null;
+      const leftBorder=isNext?ROT:badge?badge.bg:C.border;
+      return <div style={{...S.card,padding:"13px 14px",borderLeft:"4px solid "+leftBorder}}>
         <div style={{display:"flex",alignItems:"center",marginBottom:6,gap:8}}>
-          <div style={{fontSize:10,fontWeight:700,color:C.text2}}>{m.group?.groupName}</div>
+          <div style={{fontSize:11,fontWeight:600,color:C.text2}}>{m.group?.groupName}</div>
           {isNext&&<div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:5}}>
-            <div style={{width:7,height:7,borderRadius:"50%",background:ROT,animation:"pulse 1.5s infinite"}}/>
-            <span style={{fontSize:10,fontWeight:700,color:ROT}}>NÄCHSTES</span>
+            <div style={{width:7,height:7,borderRadius:"50%",background:ROT,animation:"pulse 1.5s infinite"}} aria-hidden="true"/>
+            <span style={{fontSize:11,fontWeight:700,color:ROT}}>NÄCHSTES</span>
           </div>}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <div style={{flex:1}}>
             <div style={{fontSize:13,fontWeight:700,color:C.text}}>
-              {isHome?<><span style={{color:ROT}}>FC Bayern</span>{" - "+gegner}</>:<>{gegner+' - '}<span style={{color:ROT}}>FC Bayern</span></>}
+              {isHome?<><strong>FC Bayern</strong>{" – "+gegner}</>:<>{gegner+" – "}<strong>FC Bayern</strong></>}
             </div>
-            <div style={{fontSize:11,color:C.text2,marginTop:3}}>{fmtDate(m.matchDateTime)} - {fmtTime(m.matchDateTime)}</div>
+            <div style={{fontSize:11,color:C.text2,marginTop:3}}>{fmtDate(m.matchDateTime)} · {fmtTime(m.matchDateTime)}</div>
           </div>
-          {sc!==null
-            ?<div style={{background:rb,border:"1px solid "+rc,borderRadius:7,padding:"4px 12px",minWidth:52,textAlign:"center"}}>
-              <div style={{fontSize:18,fontWeight:900,color:rc,lineHeight:1}}>{bs}:{gs}</div>
-              <div style={{fontSize:9,fontWeight:700,color:rc,letterSpacing:1}}>{res==="W"?"SIEG":res==="L"?"NIED.":"UNENT."}</div>
+          {sc!==null && badge
+            ?<div style={{background:badge.bg,borderRadius:7,padding:"4px 12px",minWidth:52,textAlign:"center"}}>
+              <div style={{fontSize:18,fontWeight:900,color:badge.text,lineHeight:1}}>{bs}:{gs}</div>
+              <div style={{fontSize:10,fontWeight:800,color:badge.text,letterSpacing:1}}>{badge.label}</div>
             </div>
-            :<div style={{background:C.card2,border:"1px solid "+C.border,borderRadius:7,padding:"4px 12px",textAlign:"center"}}>
-              <div style={{fontSize:16,fontWeight:700,color:C.text2}}>{fmtTime(m.matchDateTime)}</div>
-            </div>
+            :sc!==null
+              ?<div style={{background:C.card2,border:"1px solid "+C.border,borderRadius:7,padding:"4px 12px",minWidth:52,textAlign:"center"}}>
+                <div style={{fontSize:18,fontWeight:900,color:C.text,lineHeight:1}}>{bs}:{gs}</div>
+              </div>
+              :<div style={{background:C.card2,border:"1px solid "+C.border,borderRadius:7,padding:"4px 12px",textAlign:"center"}}>
+                <div style={{fontSize:16,fontWeight:700,color:C.text2}}>{fmtTime(m.matchDateTime)}</div>
+              </div>
           }
         </div>
       </div>;
     };
     return <div style={{padding:"0 0 20px"}}>
-      <div style={{padding:"16px 20px 12px",background:C.bg2,borderBottom:"1px solid "+C.border}}>
+      <div style={S.heroBlock}>
+        <div style={S.heroLabel}>Frauen-Bundesliga 2025/26</div>
+        <div style={{fontSize:44,fontWeight:900,color:"#fff",letterSpacing:-1,lineHeight:1,marginBottom:8}}>SPIELPLAN</div>
+        <div style={{fontSize:12,color:"#fff"}}>{filteredMatches.length} Spiele</div>
+      </div>
+      <div style={{padding:"12px 20px 10px",background:C.bg2,borderBottom:"1px solid "+C.border}}>
         <div style={{display:"flex",gap:8}}>
           {["Alle","Frauen-Bundesliga"].map(wb=>(
-            <button key={wb} onClick={()=>setFilterWb(wb)} style={{background:filterWb===wb?ROT:C.card,border:"1px solid "+(filterWb===wb?ROT:C.border),borderRadius:20,padding:"5px 14px",color:filterWb===wb?"#fff":C.text2,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>{wb}</button>
+            <button
+              key={wb}
+              onClick={()=>setFilterWb(wb)}
+              aria-pressed={filterWb===wb}
+              style={{background:filterWb===wb?ROT:C.card,border:"1px solid "+(filterWb===wb?ROT:C.border),borderRadius:20,padding:"5px 14px",color:filterWb===wb?"#fff":C.text2,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}
+            >{wb}</button>
           ))}
         </div>
       </div>
-      <div style={{padding:"16px 20px 0"}}>
+      <div style={{padding:"20px 20px 0"}}>
         {upcoming.length>0&&<><div style={S.sectionLabel}>Kommende Spiele</div><div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:20}}>{upcoming.map((m,i)=><MatchCard key={m.matchID} m={m} isNext={i===0}/>)}</div></>}
         {past.length>0&&<><div style={S.sectionLabel}>Ergebnisse</div><div style={{display:"flex",flexDirection:"column",gap:8}}>{past.map(m=><MatchCard key={m.matchID} m={m} isNext={false}/>)}</div></>}
         {loading&&<div style={{textAlign:"center",color:C.text2,padding:24}}>Lade Daten…</div>}
@@ -267,14 +297,15 @@ export default function App() {
     return <div>
       <div style={S.heroBlock}>
         <div style={S.heroLabel}>{bayernLive?"FCB LIVE":"Aktueller Spieltag"}</div>
+        <div style={{fontSize:44,fontWeight:900,color:"#fff",letterSpacing:-1,lineHeight:1,marginBottom:8}}>{bayernLive?"LIVE":"SPIELTAG"}</div>
         {bayernLive
-          ?<><div style={{fontSize:22,fontWeight:900,color:"#fff"}}>{bayernLive.team1.shortName+" "+(getScore(bayernLive)?.t1??0)+":"+(getScore(bayernLive)?.t2??0)+" "+bayernLive.team2.shortName}</div><div style={{fontSize:11,color:"rgba(255,255,255,0.6)",marginTop:4}}>{bayernLive.group?.groupName+" - Live"}</div></>
-          :<div style={{fontSize:20,fontWeight:800,color:"#fff"}}>{tickerMatches[0]?.group?.groupName||"-"}</div>
+          ?<div style={{fontSize:13,color:"#fff"}}>{bayernLive.team1.shortName+" "+(getScore(bayernLive)?.t1??0)+":"+(getScore(bayernLive)?.t2??0)+" "+bayernLive.team2.shortName+" · "+bayernLive.group?.groupName}</div>
+          :<div style={{fontSize:12,color:"#fff"}}>{tickerMatches[0]?.group?.groupName||"-"}</div>
         }
       </div>
-      <div style={{padding:"16px 20px"}}>
+      <div style={{padding:"20px 20px"}}>
         <div style={S.sectionLabel}>Alle Spiele</div>
-        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+        <div aria-live="polite" aria-label="Spieltag-Ergebnisse" style={{display:"flex",flexDirection:"column",gap:8}}>
           {tickerMatches.map(m=>{
             const sc=getScore(m),isBay=isBayern(m);
             return <div key={m.matchID} style={{...S.card,padding:"12px 14px",borderLeft:"4px solid "+(isBay?ROT:C.border)}}>
@@ -283,11 +314,11 @@ export default function App() {
                   <div style={{fontSize:13,fontWeight:isBay?800:600,color:C.text}}>{m.team1.shortName+" - "+m.team2.shortName}</div>
                   <div style={{fontSize:11,color:C.text2,marginTop:2}}>{fmtTime(m.matchDateTime)}{m.matchIsFinished?" - Abgepfiffen":""}{!m.matchIsFinished&&m.matchResults?.length>0?" - Läuft":""}</div>
                 </div>
-                {sc!==null?<div style={{fontSize:18,fontWeight:900,color:isBay?ROT:C.text}}>{sc.t1+":"+sc.t2}</div>:<div style={{fontSize:13,color:C.text2}}>{fmtTime(m.matchDateTime)}</div>}
+                {sc!==null?<div style={{fontSize:18,fontWeight:900,color:C.text}}>{sc.t1+":"+sc.t2}</div>:<div style={{fontSize:13,color:C.text2}}>{fmtTime(m.matchDateTime)}</div>}
               </div>
               {isBay&&m.goals?.length>0&&<div style={{marginTop:8,paddingTop:8,borderTop:"1px solid "+C.border}}>
                 {m.goals.map(g=><div key={g.goalID} style={{fontSize:12,color:C.text2,padding:"2px 0",display:"flex",gap:6}}>
-                  <span style={{color:ROT,fontWeight:700}}>{g.matchMinute+"'"}</span>
+                  <span style={{background:HERO_BG,color:"#fff",fontWeight:700,fontSize:12,padding:"1px 5px",borderRadius:4}}>{g.matchMinute+"'"}</span>
                   <span>{g.goalGetterName}</span>
                   {g.isPenalty&&<span style={{color:C.text3}}>(E)</span>}
                   {g.isOwnGoal&&<span style={{color:C.text3}}>(ET)</span>}
@@ -305,15 +336,15 @@ export default function App() {
     const br=table.find(t=>t.teamInfoId===BAYERN_TEAM_ID);
     return <div>
       <div style={S.heroBlock}>
-        <div style={S.heroLabel}>Tabelle - 1. Frauen-Bundesliga 2025/26</div>
-        {br&&<div style={{fontSize:64,fontWeight:900,color:"#fff",lineHeight:1,letterSpacing:-2}}>{br.points}<span style={{fontSize:18,fontWeight:600,opacity:0.6,marginLeft:6,letterSpacing:0}}>Punkte</span></div>}
-        {br&&<div style={{display:"flex",gap:20,marginTop:8}}>
-          {[{v:"1.",l:"Platz"},{v:br.won,l:"Siege"},{v:br.goals+":"+br.opponentGoals,l:"Tore"},{v:br.matches,l:"Spiele"}].map(({v,l})=>(
-            <div key={l}><div style={{fontSize:16,fontWeight:800,color:"#fff"}}>{v}</div><div style={{fontSize:10,color:"rgba(255,255,255,0.5)",fontWeight:600,letterSpacing:1}}>{l}</div></div>
+        <div style={S.heroLabel}>1. Frauen-Bundesliga 2025/26</div>
+        <div style={{fontSize:44,fontWeight:900,color:"#fff",letterSpacing:-1,lineHeight:1,marginBottom:8}}>TABELLE</div>
+        {br&&<div style={{display:"flex",gap:20}}>
+          {[{v:"1.",l:"Platz"},{v:br.points,l:"Punkte"},{v:br.won,l:"Siege"},{v:br.goals+":"+br.opponentGoals,l:"Tore"}].map(({v,l})=>(
+            <div key={l}><div style={{fontSize:16,fontWeight:800,color:"#fff"}}>{v}</div><div style={{fontSize:10,color:"#fff",fontWeight:600,letterSpacing:1}}>{l}</div></div>
           ))}
         </div>}
       </div>
-      <div style={{padding:"16px 20px"}}>
+      <div style={{padding:"20px 20px"}}>
         <div style={{display:"flex",alignItems:"center",padding:"0 10px 8px",borderBottom:"1px solid "+C.border}}>
           <div style={{width:28,fontSize:10,fontWeight:700,color:C.text3}}>#</div>
           <div style={{flex:1,fontSize:10,fontWeight:700,color:C.text3,letterSpacing:1}}>TEAM</div>
@@ -322,10 +353,10 @@ export default function App() {
         {table.map((t,i)=>{
           const isBay=t.teamInfoId===BAYERN_TEAM_ID;
           return <div key={t.teamInfoId} style={{display:"flex",alignItems:"center",padding:"9px 10px",borderBottom:"1px solid "+C.border,background:isBay?(dark?"rgba(232,33,43,0.12)":"rgba(232,33,43,0.06)"):"transparent"}}>
-            <div style={{width:28,fontSize:13,fontWeight:isBay?800:500,color:isBay?ROT:C.text2}}>{i+1}</div>
+            <div style={{width:28,fontSize:14,fontWeight:isBay?800:500,color:isBay?C.text:C.text2}}>{i+1}</div>
             <div style={{flex:1,fontSize:13,fontWeight:isBay?800:500,color:C.text}}>{isBay?"FC Bayern":t.shortName}</div>
             {[t.matches,t.won,t.draw,t.lost,t.goals+":"+t.opponentGoals,t.points].map((v,j)=>(
-              <div key={j} style={{width:j===4?44:28,textAlign:"center",fontSize:j===5?14:12,fontWeight:j===5?(isBay?900:700):400,color:j===5?(isBay?ROT:C.text):C.text2}}>{v}</div>
+              <div key={j} style={{width:j===4?44:28,textAlign:"center",fontSize:j===5?14:12,fontWeight:j===5?(isBay?900:700):400,color:j===5?C.text:C.text2}}>{v}</div>
             ))}
           </div>;
         })}
@@ -334,46 +365,49 @@ export default function App() {
   };
 
   const renderKader = () => (
-    <div style={{padding:"16px 20px"}}>
-      <div style={{...S.heroBlock,margin:"-16px -20px 20px",padding:"24px 20px 28px"}}>
+    <div>
+      <div style={S.heroBlock}>
         <div style={S.heroLabel}>Saison 2025/26</div>
         <div style={{fontSize:44,fontWeight:900,color:"#fff",letterSpacing:-1,lineHeight:1}}>KADER</div>
-        <div style={{fontSize:12,color:"rgba(255,255,255,0.55)",marginTop:4}}>{Object.values(KADER).flat().length+" Spielerinnen"}</div>
+        <div style={{fontSize:12,color:"#fff",marginTop:4}}>{Object.values(KADER).flat().length+" Spielerinnen"}</div>
       </div>
-      {Object.entries(KADER).map(([pos,players])=>(
-        <div key={pos} style={{marginBottom:24}}>
-          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-            <div style={{width:6,height:24,background:POS_COLOR[pos],borderRadius:3}}/>
-            <div style={{fontSize:16,fontWeight:800,color:C.text,textTransform:"uppercase",letterSpacing:1}}>{pos}</div>
-            <div style={{fontSize:12,color:C.text2,marginLeft:"auto"}}>{players.length}</div>
-          </div>
-          <div style={{display:"flex",flexDirection:"column",gap:6}}>
-            {players.map(p=>(
-              <div key={p.nr} style={{...S.card,display:"flex",alignItems:"center",gap:12,padding:"11px 14px",borderLeft:"3px solid "+POS_COLOR[pos]}}>
-                <div style={{width:36,height:36,borderRadius:8,background:dark?"rgba(255,255,255,0.05)":C.card2,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:900,color:POS_COLOR[pos],flexShrink:0}}>{p.nr}</div>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:14,fontWeight:700,color:C.text}}>{p.name}</div>
-                  <div style={{fontSize:11,color:C.text2,marginTop:1}}>{pos+" - "+p.age+" J."}</div>
+      <div style={{padding:"20px 20px"}}>
+        {Object.entries(KADER).map(([pos,players])=>(
+          <div key={pos} style={{marginBottom:24}}>
+            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+              <div style={{width:6,height:24,background:POS_COLOR[pos],borderRadius:3}}/>
+              <div style={{fontSize:16,fontWeight:800,color:C.text,textTransform:"uppercase",letterSpacing:1}}>{pos}</div>
+              <div style={{fontSize:12,color:C.text2,marginLeft:"auto"}}>{players.length}</div>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              {players.map(p=>(
+                <div key={p.nr} style={{...S.card,display:"flex",alignItems:"center",gap:12,padding:"11px 14px",borderLeft:"3px solid "+POS_COLOR[pos]}}>
+                  <div style={{width:36,height:36,borderRadius:8,background:dark?"rgba(255,255,255,0.05)":C.card2,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:900,color:POS_COLOR[pos],flexShrink:0}}>{p.nr}</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:14,fontWeight:700,color:C.text}}>{p.name}</div>
+                    <div style={{fontSize:11,color:C.text2,marginTop:1}}>{pos+" - "+p.age+" J."}</div>
+                  </div>
+                  <div style={{fontSize:13,color:C.text2,fontWeight:600}}>{FLAG[p.nat]||""}</div>
                 </div>
-                <div style={{fontSize:13,color:C.text2,fontWeight:600}}>{FLAG[p.nat]||""}</div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 
   const renderVerein = () => (
     <div>
-      <div style={{...S.heroBlock,paddingBottom:0}}>
+      <div style={S.heroBlock}>
         <div style={S.heroLabel}>FC Bayern München Frauen</div>
-        <div style={{display:"flex",gap:0,marginTop:20}}>
+        <div style={{fontSize:44,fontWeight:900,color:"#fff",letterSpacing:-1,lineHeight:1,marginBottom:8}}>VEREIN</div>
+        <div style={{display:"flex",gap:0}}>
           {VEREIN_STATS.map(({label,value,sub},i)=>(
-            <div key={label} style={{flex:1,paddingBottom:20,borderRight:i<2?"1px solid rgba(255,255,255,0.2)":"none",paddingRight:16,paddingLeft:i>0?16:0}}>
-              <div style={{fontSize:48,fontWeight:900,color:"#fff",lineHeight:1}}>{value}</div>
-              <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.5)",letterSpacing:1.5,textTransform:"uppercase",marginTop:4}}>{label}</div>
-              <div style={{fontSize:10,color:"rgba(255,255,255,0.35)",marginTop:2}}>{sub}</div>
+            <div key={label} style={{flex:1,borderRight:i<2?"1px solid rgba(255,255,255,0.2)":"none",paddingRight:16,paddingLeft:i>0?16:0}}>
+              <div style={{fontSize:28,fontWeight:900,color:"#fff",lineHeight:1}}>{value}</div>
+              <div style={{fontSize:10,fontWeight:700,color:"#fff",letterSpacing:1.5,textTransform:"uppercase",marginTop:4}}>{label}</div>
+              <div style={{fontSize:10,color:"#fff",marginTop:2}}>{sub}</div>
             </div>
           ))}
         </div>
@@ -410,23 +444,62 @@ export default function App() {
     }
   };
 
+  const focusCSS = `
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    *{box-sizing:border-box;margin:0;padding:0;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(0.7);}}
+    ::-webkit-scrollbar{width:4px;}
+    ::-webkit-scrollbar-thumb{background:${C.border};border-radius:2px;}
+    /* WCAG 2.4.7 – sichtbarer Fokusindikator */
+    :focus-visible{outline:3px solid #fff;outline-offset:2px;border-radius:4px;}
+    /* Skip-Link */
+    .skip-link{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;}
+    .skip-link:focus{position:fixed;top:8px;left:50%;transform:translateX(-50%);width:auto;height:auto;background:#fff;color:#000;padding:8px 16px;border-radius:6px;font-size:14px;font-weight:700;z-index:9999;outline:3px solid ${ROT};}
+  `;
+
   return (
     <div style={{fontFamily:"'Inter',-apple-system,sans-serif",background:C.bg,color:C.text,minHeight:"100vh",maxWidth:480,margin:"0 auto",position:"relative"}}>
-      <style>{"@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap'); *{box-sizing:border-box;margin:0;padding:0;} @keyframes spin{to{transform:rotate(360deg);}} @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(0.7);}} ::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-thumb{background:"+C.border+";border-radius:2px;}"}</style>
-      <div style={{background:ROT,padding:"0 20px",display:"flex",alignItems:"center",justifyContent:"space-between",height:52,position:"sticky",top:0,zIndex:100}}>
+      <style>{focusCSS}</style>
+
+      {/* Skip-Link für Tastaturnutzer (WCAG 2.4.1) */}
+      <a href="#main-content" className="skip-link">Zum Hauptinhalt springen</a>
+
+      <header role="banner" style={{background:ROT,padding:"0 20px",display:"flex",alignItems:"center",justifyContent:"space-between",height:52,position:"sticky",top:0,zIndex:100}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <div style={{width:28,height:28,background:"#fff",borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:900,color:ROT}}>FCB</div>
-          <div style={{fontSize:13,fontWeight:800,color:"#fff",letterSpacing:0.5}}>Bayern Frauen</div>
+          {/* Dekoratives Logo – für Screenreader ausgeblendet */}
+          <div aria-hidden="true" style={{width:28,height:28,background:"#fff",borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:900,color:ROT}}>FCB</div>
+          <span style={{fontSize:14,fontWeight:800,color:"#fff",letterSpacing:0.5}}>Bayern Frauen</span>
         </div>
-        <button onClick={()=>setDark(d=>!d)} style={{background:"rgba(255,255,255,0.15)",border:"none",borderRadius:20,padding:"5px 12px",color:"#fff",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+        <button
+          onClick={()=>setDark(d=>!d)}
+          aria-label={dark?"Zu hellem Design wechseln":"Zu dunklem Design wechseln"}
+          aria-pressed={dark}
+          style={{background:"rgba(255,255,255,0.15)",border:"2px solid transparent",borderRadius:20,padding:"5px 12px",color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}
+        >
           {dark?"Hell":"Dunkel"}
         </button>
-      </div>
-      <div style={{paddingBottom:80,overflowX:"hidden"}}>{renderTab()}</div>
-      <nav style={{position:"sticky",bottom:0,background:C.bg2,borderTop:"1px solid "+C.border,display:"flex",zIndex:100}}>
+      </header>
+
+      <main id="main-content" style={{paddingBottom:80,overflowX:"hidden"}}>
+        {renderTab()}
+      </main>
+
+      <nav
+        role="navigation"
+        aria-label="Hauptnavigation"
+        style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:C.bg2,borderTop:"1px solid "+C.border,display:"flex",zIndex:100}}
+      >
         {NAV.map(({id,label})=>(
-          <button key={id} onClick={()=>setTab(id)} style={S.navBtn(tab===id)}>
-            {ICONS[id]}<span>{label}</span>
+          <button
+            key={id}
+            onClick={()=>setTab(id)}
+            aria-label={label}
+            aria-current={tab===id?"page":undefined}
+            style={S.navBtn(tab===id)}
+          >
+            <span aria-hidden="true" style={S.navIcon(tab===id)}>{ICONS[id]}</span>
+            <span style={S.navLabel(tab===id)}>{label}</span>
           </button>
         ))}
       </nav>
