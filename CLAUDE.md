@@ -229,6 +229,21 @@ Wenn eine Anfrage unklar ist, vor der Umsetzung fragen:
 
 ---
 
+## Deployment
+
+| Umgebung | URL |
+|---|---|
+| Produktion | https://fcb-frauen-app.vercel.app |
+| Vercel-Projekt | https://vercel.com/jgumpert-3000s-projects/fcb-frauen-app |
+
+**Workflow:** Jeder `git push` auf `main` löst automatisch ein Vercel-Deployment aus.
+Kein manueller Deploy-Schritt nötig. Status unter dem Vercel-Link prüfbar.
+
+Vercel-Projekt-ID: `prj_rYlIrsYs2o6cNpqBOkyDqLbdkXu8`
+Team: `jgumpert-3000s-projects` (`team_51jhPohum8Yg8U3z7RDUm49P`)
+
+---
+
 ## Entwicklung starten
 
 ```bash
